@@ -3,18 +3,22 @@
 
 #include <string>
 
+const float MIN_PRICE = 1.0f; // minimum price for food
+const float MAX_PRICE = 1000.0f; // maximum price for food
+
 enum class Command{ viewMenu, addMenu, removeMenu, removeAll, exit, invalid };
 
 struct Food {
 	int id;
 	std::string name;
 	float price;
-	Food* pPrev;
+	Food* pNext;
 };
 
 struct NodeInfo {
 	Food* pNode;
 	Food* pParent;
+	Food* pTail;
 };
 
 // Clear any characters from the input buffer
@@ -35,18 +39,18 @@ void handleMenuInput(Food*& pHead, Command command);
 void viewMenu(Food* pHead);
 
 // Create a new food menu on the heap
-Food* createFood(const std::string name, int price);
+Food* createFood(const std::string name, float price);
 
 // Create a new food nod, add it to the menu list
-void addNewFood(Food*& pTail, std::string name, int price);
+void addNewFood(Food*& pHead, std::string name, float price);
 
 // Search through the list for a node with id
-NodeInfo getNodeInfo(Food* pTail, int idFood);
+NodeInfo getNodeInfo(Food* pHead, int idFood);
 
 // Removes a food menu node with the given id from the list.
-void removeFood(Food*& pTail, int idFood);
+void removeFood(Food*& pHead, int idFood);
 
 //Remove all food menu after showing the list
-void removeAllFoods(Food*& pTail);
+void removeAllFoods(Food*& pHead);
 
 #endif

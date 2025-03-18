@@ -1,11 +1,11 @@
 #include <iostream>
+#include <sstream>
 #include "MainMenu.h"
 
 // clear any characters from the (keyboard) input buffer
 void ignoreLine() {
+	std::cin.clear();
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-
 }
 
 // read and return an int from the console.  Keep trying if invalid until an int is returned.
@@ -77,16 +77,32 @@ void handleMenuInput(Food*& pHead, Command command)
 		std::cout << ">> View Menu:\n";
 		viewMenu(pHead);
 		break;
-	case Command::addMenu: 
+
+	case Command::addMenu: {
 		std::cout << ">> Add Menu:\n";
 		std::cout << "Enter name:";
 		std::string name;
 		std::getline(std::cin, name);
-		std::cout << "Enter food price(only number):";
-		int price{-1};
-		std::cin >> price;
+		
+		float price{ MIN_PRICE };
+		while (true) {
+			std::cout << "Enter food price(only number):";
+			std::cin >> price;
+
+			if (std::cin.fail() || price < MIN_PRICE || price > MAX_PRICE) {
+				std::cout << "Invalid input or the price is out of range. Please enter a valid price between "
+					<< MIN_PRICE << " and " << MAX_PRICE << ".\n";
+				ignoreLine();
+			}
+			else {
+				break;
+			}
+		}
+
 		addNewFood(pHead, name, price);
+		std::cout << name << " is added.";
 		break;
+	}
 	case Command::removeMenu:
 		std::cout << ">> Remove Menu:\n";
 		std::cout << "Enter id:";
@@ -101,6 +117,7 @@ void handleMenuInput(Food*& pHead, Command command)
 	case Command::exit:
 		std::cout << "Exiting\n";
 		break;
+
 	default:
 		std::cout << "Invalid input.\n";
 		break;
@@ -110,35 +127,45 @@ void handleMenuInput(Food*& pHead, Command command)
 void viewMenu(Food* pHead) {
 	if (pHead != nullptr) {
 		while (pHead != nullptr) {
-			std::cout << "[id: " << pHead->id << ", name: " << pHead->name << ", price: " << pHead->price << "]\n";
-			pHead = pHead->pPrev;
+			std::stringstream ss;
+			ss.imbue(std::locale("en_US.UTF-8"));
+			ss << pHead->price;
+			std::cout << "[id: " << pHead->id << ", name: " << pHead->name << ", price: $" << ss.str() << "]\n";
+			pHead = pHead->pNext;
 		}
 	} else {
 		std::cout << "empty list.\n";
 	}
 }
 
-Food* createFood(const std::string name, int price) {
+Food* createFood(const std::string name, float price) {
 	Food* newFood = new Food;
 	static int id = 0;
 
 	newFood->id = id++;
 	newFood->name = name.empty() ? "no name" : name;
 	newFood->price = price;
-	newFood->pPrev = nullptr;
+	newFood->pNext = nullptr;
 
 	return newFood;
 }
 
 
-void addNewFood(Food*& pTail, std::string name, int price) {
+void addNewFood(Food*& pHead, std::string name, float price) {
 	Food* newFood{ createFood(name, price) };
 
-	if (pTail != nullptr) {
-		pTail->pPrev = newFood;
+	if (pHead == nullptr) {
+		// if the list is empty
+		pHead = newFood;
 	}
-
-	pTail = newFood;
+	else {
+		// add new food at the tail of the list 
+		Food* temp = pHead;
+		while (temp->pNext != nullptr) {
+			temp = temp->pNext;
+		}
+		temp->pNext = newFood;
+	}
 }
 
 NodeInfo getNodeInfo(Food* pHead, int idFood) {
@@ -152,7 +179,7 @@ NodeInfo getNodeInfo(Food* pHead, int idFood) {
 			break;
 		}
 		theNode.pParent = pHead;
-		pHead = pHead->pPrev;
+		pHead = pHead->pNext;
 	}
 	if (pHead == nullptr) {
 		theNode.pParent = nullptr;
@@ -160,22 +187,22 @@ NodeInfo getNodeInfo(Food* pHead, int idFood) {
 	return theNode;
 };
 
-void removeFood(Food*& pTail, int idFood) {
-	NodeInfo node{ getNodeInfo(pTail, idFood) };
+void removeFood(Food*& pHead, int idFood) {
+	NodeInfo node{ getNodeInfo(pHead, idFood) };
 
 	if (node.pNode == nullptr) {
-		std::cout << "employee id: " << idFood << " not found\n";
+		std::cout << "Food id: " << idFood << " not found\n";
 	}
 	else {
 		std::cout << "removed id: " << idFood << "\n";
 		if (node.pParent == nullptr) {
-			Food* old = pTail;
-			pTail = pTail->pPrev;
+			Food* old = pHead;
+			pHead = pHead->pNext;
 			delete old;
 		}
 		else {
-			Food* old = node.pParent->pPrev;
-			node.pParent->pPrev = node.pNode->pPrev;
+			Food* old = node.pParent->pNext;
+			node.pParent->pNext = node.pNode->pNext;
 			delete old;
 		}
 	}
