@@ -5,8 +5,10 @@
 
 const float MIN_PRICE = 1.0f; // minimum price for food
 const float MAX_PRICE = 1000.0f; // maximum price for food
+const float MIN_RATE = 0.05f; // minimum discount rate
+const float MAX_RATE = 0.9f; // maximum discount rate
 
-enum class Command{ viewMenu, addMenu, removeMenu, removeAll, exit, invalid };
+enum class Command{ viewMenu, addMenu, editPrice, removeMenu, removeAll, exit, invalid };
 
 struct Food {
 	int id;
@@ -46,6 +48,12 @@ void addNewFood(Food*& pHead, std::string name, float price);
 
 // Search through the list for a node with id
 NodeInfo getNodeInfo(Food* pHead, int idFood);
+
+// Edit food's price
+void editFoodPrice(Food*& pHead, int idFood);
+
+// Apply discount rate
+void applyDiscount(Food*& pHead, float rate);
 
 // Removes a food menu node with the given id from the list.
 void removeFood(Food*& pHead, int idFood);

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <algorithm>
 #include "MainMenu.h"
 
 // clear any characters from the (keyboard) input buffer
@@ -36,6 +38,7 @@ void displayMainMenu()
 	std::cout << "2) Add Menu\n";
 	std::cout << "3) Remove Menu\n";
 	std::cout << "4) Remove all\n";
+	std::cout << "5) Edit Price\n";
 	std::cout << "0) Exit\n";
 	std::cout << "-------------\n";
 	std::cout << "Select:";
@@ -60,6 +63,7 @@ Command getMenuCommand() {
 	case 2: command = Command::addMenu; break;
 	case 3: command = Command::removeMenu; break;
 	case 4: command = Command::removeAll; break;
+	case 5: command = Command::editPrice; break;
 	case 0: command = Command::exit; break;
 	}
 	return command;
@@ -105,6 +109,7 @@ void handleMenuInput(Food*& pHead, Command command)
 	}
 	case Command::removeMenu:
 		std::cout << ">> Remove Menu:\n";
+		viewMenu(pHead);
 		std::cout << "Enter id:";
 		removeFood(pHead, getIntFromUser());
 		break;
@@ -114,6 +119,64 @@ void handleMenuInput(Food*& pHead, Command command)
 		removeAllFoods(pHead);
 		break;
 
+	case Command::editPrice: {
+		if (pHead == nullptr) {
+			std::cout << "empty list.\n";
+			break;
+		}
+		else {
+			std::cout << ">> Edit Price:\n";
+			std::cout << "Select an option:\n";
+			std::cout << "-------------------------\n";
+			std::cout << "1) Price Modification\n";
+			std::cout << "2) Discount Application\n";
+			std::cout << "3) Cancel\n";
+			std::cout << "-------------------------\n";
+			std::cout << "Select:";
+
+			int option{ -1 };
+			std::cin >> option;
+			if (std::cin.fail()) {
+				std::cin.clear();	// clear the failure
+				option = -1;			// indicate an error
+			}
+			ignoreLine();
+
+			switch (option) {
+			case 1: {
+				viewMenu(pHead);
+				std::cout << "Enter id:";
+				editFoodPrice(pHead, getIntFromUser());
+				break;
+			}
+			case 2: {
+				float discountRate{ 1.0 };
+				while (true) {
+					std::cout << "Enter the discount rate between 5% ~ 90% (e.g., 0.1 for 10%):";
+					std::cin >> discountRate;
+
+					if (std::cin.fail() || discountRate < MIN_RATE || discountRate > MAX_RATE) {
+						std::cout << "Invalid input or the rate is out of range.\nPlease enter a valid rate between "
+							<< MIN_RATE * 100 << "% and " << MAX_RATE * 100 << "%.\n";
+						ignoreLine();
+					}
+					else {
+						break;
+					}
+				}
+				
+				applyDiscount(pHead, discountRate);
+				break;
+			}
+			case 3:
+				std::cout << "Edit Price cancelled.\n";
+				break;
+			default:
+				std::cout << "Invalid input.\n";
+				break;
+			}
+		}
+	}
 	case Command::exit:
 		std::cout << "Exiting\n";
 		break;
@@ -186,6 +249,69 @@ NodeInfo getNodeInfo(Food* pHead, int idFood) {
 	}
 	return theNode;
 };
+
+void editFoodPrice(Food*& pHead, int idFood) {
+	NodeInfo node{ getNodeInfo(pHead, idFood) };
+
+	if (node.pNode == nullptr) {
+		std::cout << "Food id: " << idFood << " not found\n";
+	}
+	else {
+		std::cout << "Enter the new price (only number): ";
+		float newPrice;
+		std::cin >> newPrice;
+		while (true) {
+			if (std::cin.fail() || newPrice < MIN_PRICE || newPrice > MAX_PRICE) {
+				std::cout << "Invalid input or the price is out of range. Please enter a valid price between "
+					<< MIN_PRICE << " and " << MAX_PRICE << ".\n";
+				ignoreLine();
+			}
+			else {
+				node.pNode->price = newPrice;
+				std::cout << node.pNode->name << "'s price updated successfully.\n";
+				break;
+			}
+		}
+	}
+}
+
+void applyDiscount(Food*& pHead, float rate) {
+	viewMenu(pHead);
+	std::vector<int> selectedIds;
+
+	while (true) {
+		std::cout << "Enter Food ID to apply discount (or -1 to finish): ";
+		int id;
+		std::cin >> id;
+		if (id == -1) break;
+
+		NodeInfo node{ getNodeInfo(pHead, id) };
+		if (node.pNode == nullptr) {
+			std::cout << "Food id: " << id << " not found\n";
+			viewMenu(pHead);
+		}
+		else {
+			if (std::find(selectedIds.begin(), selectedIds.end(), id) != selectedIds.end()) {
+				std::cout << "Food id: " << id << " already selected.\n";
+			}
+			else {
+				selectedIds.push_back(id);
+			}
+		}
+	}
+
+	for (int id : selectedIds) {
+		Food* temp = pHead;
+		while (temp != nullptr) {
+			if (temp->id == id) {
+				temp->price *= (1 - rate);
+				std::cout << "Discount applied to " << temp->name << " (ID: " << temp->id << "). New price: " << temp->price << "\n";
+				break;
+			}
+			temp = temp->pNext;
+		}
+	}
+}
 
 void removeFood(Food*& pHead, int idFood) {
 	NodeInfo node{ getNodeInfo(pHead, idFood) };
