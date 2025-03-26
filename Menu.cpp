@@ -6,7 +6,7 @@ int main()
 	// Pointer to the menu list
 	Food* pFoods = nullptr;
 
-	bool exitMainMenu{ false };
+	//bool exitMainMenu{ false };
 	Command command{ Command::invalid };
 
 	// Display the main menu, handle the input from the user

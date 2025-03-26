@@ -8,8 +8,10 @@ const float MAX_PRICE = 1000.0f; // maximum price for food
 const float MIN_RATE = 0.05f; // minimum discount rate
 const float MAX_RATE = 0.9f; // maximum discount rate
 
+// Command set to handle user input from the menu selection
 enum class Command{ viewMenu, addMenu, editPrice, removeMenu, removeAll, exit, invalid };
 
+// Struct to store food information
 struct Food {
 	int id;
 	std::string name;
@@ -17,10 +19,12 @@ struct Food {
 	Food* pNext;
 };
 
+// A struct used to return multiple return values from the getNodeInfo() function.
+// getNodeInfo() traverses the list looking for a target node (and its parent node).
+// NodeInfo contains info needed to facilitate node insertion & deletion in the list.
 struct NodeInfo {
-	Food* pNode;
-	Food* pParent;
-	Food* pTail;
+	Food* pNode;	// a pointer to the "target" node.
+	Food* pParent;  // a pointer to the node prior to pNode (nullptr if node is at the front)
 };
 
 // Clear any characters from the input buffer

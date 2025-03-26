@@ -88,7 +88,8 @@ void handleMenuInput(Food*& pHead, Command command)
 		std::string name;
 		std::getline(std::cin, name);
 		
-		float price{ MIN_PRICE };
+		float price{ MIN_PRICE };  // set the price as minimum price, $1
+		// repeat till get a price in the range ($1 ~ $1,000) and numeric
 		while (true) {
 			std::cout << "Enter food price(only number):";
 			std::cin >> price;
@@ -134,23 +135,24 @@ void handleMenuInput(Food*& pHead, Command command)
 			std::cout << "-------------------------\n";
 			std::cout << "Select:";
 
-			int option{ -1 };
+			int option{ -1 };	// edit price option
 			std::cin >> option;
 			if (std::cin.fail()) {
-				std::cin.clear();	// clear the failure
+				std::cin.clear();		// clear the failure
 				option = -1;			// indicate an error
 			}
 			ignoreLine();
 
 			switch (option) {
 			case 1: {
-				viewMenu(pHead);
+				viewMenu(pHead);	// display menu to show the ids
 				std::cout << "Enter id:";
 				editFoodPrice(pHead, getIntFromUser());
 				break;
 			}
 			case 2: {
-				float discountRate{ 1.0 };
+				float discountRate{ 1.0 };	// discount rate to apply (cost price)
+				// repeat asking rate till the input is in the range (5% ~ 90%)
 				while (true) {
 					std::cout << "Enter the discount rate between 5% ~ 90% (e.g., 0.1 for 10%):";
 					std::cin >> discountRate;
@@ -187,6 +189,14 @@ void handleMenuInput(Food*& pHead, Command command)
 	}
 }
 
+// Output a list of all food menu.
+// If the list is empty (nullptr), print "empty list." 
+// If it isn't empty, print each food's id, name and price to the console:
+//    eg: [id: 5, name: Cheese burger price: $12.99]
+// Create a pointer to traverse the list, point it at the front of the list,
+// process the node (output as shown above), and advance the pointer through the
+// list.  Repeat until you process the last node.
+// -param 1: the head pointer to Food struct 
 void viewMenu(Food* pHead) {
 	if (pHead != nullptr) {
 		while (pHead != nullptr) {
@@ -201,6 +211,13 @@ void viewMenu(Food* pHead) {
 	}
 }
 
+// Create a new Food struct
+// initialized it with:
+//		-the unique id,
+//		-the name passed in as a paramter,
+//		-nullptr.
+// - param 1: a string - the food's name.
+// - return: a pointer to the new Food struct
 Food* createFood(const std::string name, float price) {
 	Food* newFood = new Food;
 	static int id = 0;
@@ -213,12 +230,15 @@ Food* createFood(const std::string name, float price) {
 	return newFood;
 }
 
-
+// Create a new food nod, add it to the menu list
+// - param 1: a pointer to the front of the food list to check if the list is empty or not
+// - param 2: a string (food name for a new food struct)
+// - param 3: a float (the food price). 
 void addNewFood(Food*& pHead, std::string name, float price) {
 	Food* newFood{ createFood(name, price) };
 
 	if (pHead == nullptr) {
-		// if the list is empty
+		// if the list is empty, new food is the head pointer
 		pHead = newFood;
 	}
 	else {
@@ -231,6 +251,13 @@ void addNewFood(Food*& pHead, std::string name, float price) {
 	}
 }
 
+// Search through the list for a node with id
+// - param 1: a pointer to the front of the food list
+// - param 2: an int id to search for
+// - return: a NodeInfo struct. It contains a pointer to the node that matches  
+//			 the id and a pointer to that node's parent. 
+//           If node not found, pointers inside NodeInfo should both be nullptr.
+//           If node is first in the list, NodeInfo.pParent should be nullptr.
 NodeInfo getNodeInfo(Food* pHead, int idFood) {
 	NodeInfo theNode{};
 	theNode.pNode = nullptr;
@@ -250,6 +277,13 @@ NodeInfo getNodeInfo(Food* pHead, int idFood) {
 	return theNode;
 };
 
+// Edit food's price
+// Try to find a node with the id (getNodeInfo()). 
+// If node not found, output "Error: Food id:# not found\n". 
+// If node found, change node.pNode.price with the new price (user input)
+// and output "[Food name]'s price is updated successfully."
+// - param 1: a pointer to the front of the food list
+// - param 2: an int id to search for
 void editFoodPrice(Food*& pHead, int idFood) {
 	NodeInfo node{ getNodeInfo(pHead, idFood) };
 
@@ -258,8 +292,9 @@ void editFoodPrice(Food*& pHead, int idFood) {
 	}
 	else {
 		std::cout << "Enter the new price (only number): ";
-		float newPrice;
+		float newPrice;		// new price to apply
 		std::cin >> newPrice;
+		// repeat until the price is in the range ($1 ~ $1,000) and numeric
 		while (true) {
 			if (std::cin.fail() || newPrice < MIN_PRICE || newPrice > MAX_PRICE) {
 				std::cout << "Invalid input or the price is out of range. Please enter a valid price between "
@@ -275,10 +310,17 @@ void editFoodPrice(Food*& pHead, int idFood) {
 	}
 }
 
+// Apply discount rate
+// Collect ids first (only valid id and no duplicate id)
+// and apply the discount rate to all collected ids, then
+// output "Discount applied to [Food name] (ID: [Food id]). New price: "[rate-applied price]";
+// - param 1: a pointer to the front of the food list
+// - param 2: the discount rate to apply
 void applyDiscount(Food*& pHead, float rate) {
-	viewMenu(pHead);
-	std::vector<int> selectedIds;
+	viewMenu(pHead);	// display the food list first
+	std::vector<int> selectedIds;	// ids to apply the discount rates
 
+	// keep collecting ids till enter -1 to finish
 	while (true) {
 		std::cout << "Enter Food ID to apply discount (or -1 to finish): ";
 		int id;
@@ -313,6 +355,19 @@ void applyDiscount(Food*& pHead, float rate) {
 	}
 }
 
+// Remove a food menu node with the given id from the list.
+//  Try to find a node with the id (getNodeInfo()). 
+//	If node not found, output "Error: employee id:# not found\n". 
+//  If node found, but parent is nullptr, the node is first in the list:
+//			-Set the pHead to point to the second node in the list.
+//			-Output "removed id:#"
+//			-Deallocate the node
+//  otherwise the node was found and a parent exists
+//			-Set the parent's next pointer to the next pointer of the node we want to delete
+//			-Output a "removed id: #n"
+//			-Deallocate the node
+// - param 1: a pointer to the front of the food list
+// - param 2: an int id to search for
 void removeFood(Food*& pHead, int idFood) {
 	NodeInfo node{ getNodeInfo(pHead, idFood) };
 
