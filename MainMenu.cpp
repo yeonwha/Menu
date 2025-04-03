@@ -334,7 +334,7 @@ void applyDiscount(Food*& pHead, float rate) {
 		}
 		else {
 			if (std::find(selectedIds.begin(), selectedIds.end(), id) != selectedIds.end()) {
-				std::cout << "Food id: " << id << " already selected.\n";
+				std::cout << "Food id: " << id << " already selected\n";
 			}
 			else {
 				selectedIds.push_back(id);
