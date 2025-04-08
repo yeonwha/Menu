@@ -389,7 +389,7 @@ void removeFood(Food*& pHead, int idFood) {
 	}
 };
 
-// Removes all employees after showing the list.
+// Removes all foods after showing the menu list.
 void removeAllFoods(Food*& pHead) {
 	viewMenu(pHead);
 	while (pHead != nullptr) {
