@@ -10,8 +10,8 @@ This project is a console based menu management program for restaurants. The fol
 
 ## Build Environment
 
-Compiler: Visual Studio 2022
-C++ Standard: C++17 or later
+ - Compiler: Visual Studio 2022
+ - C++ Standard: C++17 or later
 
 ## How to run
 
